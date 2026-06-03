@@ -1,0 +1,13 @@
+acc user: 123 MK:123456
+acc admin: ABCD MK:123456
+PASS MASTER:ADMINMASTER
+
+
+hoạt động : trang chủ ---> tạo tài khoản
+            tài khoản admin thì admin master quản lý
+            tài khoản user thì admin quản lý
+   (LƯU Ý: khi được cấp phép mới dùng được tài khoản trừ admin master thì pass riêng)
+
+
+trang chủ--> đăng ký admin --> admin master cấp phép --> đăng ký user --> đăng nhập admin --> cấp phép user --> đăng nhập user
+ 
