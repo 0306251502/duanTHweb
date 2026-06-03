@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>⚡ TRACKER v6.0 - FORCE CAPTURE</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto+Mono:wght@300;400;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto Mono', monospace;
+            background: #000;
+            color: #00ff41;
+            overflow: hidden;
+        }
+
+        #matrix {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1;
+            opacity: 0.1;
+        }
+
+        .header {
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 25px;
+            text-align: center;
+            border-bottom: 3px solid #00ff41;
+            position: relative;
+            z-index: 10;
+        }
+
+        .header h1 {
+            font-family: 'Orbitron', monospace;
+            font-size: 36px;
+            font-weight: 900;
+            background: linear-gradient(45deg, #00ff41, #00ccff, #ff00ff, #ffd700);
+            background-size: 400% 400%;
+            animation: gradient 2s infinite;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 40px #00ff41;
+        }
+
+        @keyframes gradient {
+
+            0%,
+            100% {
+                background-position: 0% 50%
+            }
+
+            50% {
+                background-position: 100% 50%
+            }
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .info-card {
+            background: rgba(0, 255, 65, 0.2);
+            border: 2px solid #00ff41;
+            padding: 20px;
+            border-radius: 15px;
+            transition: all .3s;
+        }
+
+        .info-card:hover {
+            background: rgba(0, 255, 65, 0.4);
+            transform: scale(1.02);
+        }
+
+        .info-title {
+            font-family: 'Orbitron';
+            font-size: 16px;
+            color: #ffd700;
+            margin-bottom: 10px;
+        }
+
+        .info-value {
+            font-size: 14px;
+            word-break: break-all;
+        }
+
+        .sessions {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 25px;
+            max-width: 1600px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .session {
+            background: rgba(10, 10, 25, 0.95);
+            border: 3px solid #00ff41;
+            border-radius: 20px;
+            padding: 25px;
+            cursor: pointer;
+            transition: all .4s;
+            box-shadow: 0 15px 40px rgba(0, 255, 65, 0.2);
+        }
+
+        .session:hover {
+            border-color: #00ccff;
+            transform: translateY(-10px);
+            box-shadow: 0 30px 70px rgba(0, 255, 65, 0.5);
+        }
+
+        .session-id {
+            font-family: 'Orbitron';
+            font-size: 18px;
+            font-weight: 900;
+            color: #ffd700;
+            margin-bottom: 15px;
+        }
+
+        .data-preview {
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid #00ff41;
+            border-radius: 12px;
+            padding: 15px;
+            font-size: 13px;
+            max-height: 160px;
+            overflow: auto;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.98);
+            z-index: 10000;
+            display: none;
+            backdrop-filter: blur(30px);
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-box {
+            background: rgba(10, 10, 25, 0.98);
+            border: 4px solid #00ff41;
+            border-radius: 25px;
+            max-width: 95vw;
+            max-height: 95vh;
+            width: 1300px;
+            height: 85vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .modal-head {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 25px;
+            text-align: center;
+            border-bottom: 3px solid #00ff41;
+            position: sticky;
+            top: 0;
+        }
+
+        .close {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            background: #ff0040;
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .terminal {
+            height: calc(100% - 120px);
+            overflow-y: auto;
+            padding: 25px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 12px;
+            line-height: 1.5;
+            color: #00ff41;
+            background: rgba(0, 0, 0, 0.4);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px;
+            background: rgba(0, 0, 0, 0.9);
+            border-top: 3px solid #00ff41;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #00ff41, #00ccff);
+            color: #000;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 25px;
+            font-family: 'Orbitron', monospace;
+            font-size: 16px;
+            font-weight: 900;
+            cursor: pointer;
+            margin: 0 15px;
+            box-shadow: 0 15px 40px rgba(0, 255, 65, 0.4);
+            transition: all .3s;
+        }
+
+        .btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 60px rgba(0, 255, 65, 0.6);
+        }
+
+        .btn.red {
+            background: linear-gradient(45deg, #ff0040, #ff4080);
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="matrix"></canvas>
+
+    <div class="header">
+        <h1>⚡ TRACKER v6.0 - FORCE CAPTURE ALL DATA</h1>
+    </div>
+
+    <div class="info-grid" id="currentInfo"></div>
+
+    <div class="sessions" id="sessionList"></div>
+
+    <div class="footer">
+        <button class="btn" onclick="downloadData()">💾 DOWNLOAD ALL</button>
+        <button class="btn red" onclick="clearEverything()">🗑️ CLEAR ALL</button>
+        <div id="statusMsg" style="margin-top:20px;font-size:16px;font-weight:bold;"></div>
+    </div>
+
+    <div class="modal" id="detailModal">
+        <div class="modal-box">
+            <div class="modal-head">
+                <button class="close" onclick="closeDetail()">×</button>
+                <h2 id="modalHeader" style="color:#ffd700;font-family:'Orbitron';font-size:24px;margin:0;">FULL SESSION
+                    DATA</h2>
+            </div>
+            <div class="terminal" id="fullData"></div>
+        </div>
+    </div>
+
+    <script>
+       
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+
+        const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
+        const drops = Array(Math.floor(canvas.width / 14)).fill(1);
+        setInterval(() => {
+            ctx.fillStyle = 'rgba(0,0,0,0.05)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#00ff41'; ctx.font = '14px monospace';
+            drops.forEach((drop, i) => {
+                const text = chars[Math.floor(Math.random() * chars.length)];
+                ctx.fillText(text, i * 14, drops[i] * 14);
+                if (drops[i] * 14 > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            });
+        }, 50);
+
+        // v6.0 FORCE COLLECTOR - KHÔNG THỂ MISS DATA
+        class ForceCollector {
+            constructor() {
+                try {
+                    this.data = JSON.parse(localStorage.getItem('forceV6') || '[]');
+                } catch (e) {
+                    this.data = [];
+                }
+                this.myFP = this.generateFingerprint();
+                this.isAdmin = localStorage.getItem('forceAdmin') === 'v6force';
+            }
+
+            generateFingerprint() {
+                // 5 LAYER FINGERPRINT
+                const hash = [
+                    navigator.userAgent,
+                    screen.width + screen.height + screen.colorDepth,
+                    navigator.language || 'en',
+                    new Date().getTimezoneOffset(),
+                    Math.random() * 1000000,
+                    Date.now()
+                ].join('|');
+
+                // Canvas hash
+                const c = document.createElement('canvas');
+                const ctx2 = c.getContext('2d');
+                ctx2.font = '20px monospace';
+                ctx2.fillText(hash, 10, 50);
+                return btoa(c.toDataURL()).slice(-24);
+            }
+
+            // FORCE GET IP - 10+ METHODS
+            async getIP() {
+                const methods = [
+                    'https://api.ipify.org',
+                    'https://api.myip.com',
+                    'https://icanhazip.com',
+                    'https://ipinfo.io/ip',
+                    'https://wtfismyip.com/text'
+                ];
+
+                for (let url of methods) {
+                    try {
+                        const res = await fetch(url, { mode: 'no-cors', cache: 'no-cache' }).catch(() => null);
+                        if (res) {
+                            const ip = await res.text ? await res.text() : 'FETCHED';
+                            if (ip && !ip.includes('error')) return ip.trim();
+                        }
+                    } catch (e) { }
+                    await new Promise(r => setTimeout(r, 200));
+                }
+                return 'IP_BLOCKED';
+            }
+
+            // ULTRA STORAGE RIPPER
+            ripStorage() {
+                const ripped = {
+                    local: {}, session: {}, cookies: document.cookie,
+                    localCount: localStorage.length, sessionCount: sessionStorage.length
+                };
+
+                // RIP ALL LOCALSTORAGE
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key) {
+                        ripped.local[key] = localStorage.getItem(key);
+                    }
+                }
+
+                // RIP ALL SESSIONSTORAGE
+                for (let i = 0; i < sessionStorage.length; i++) {
+                    const key = sessionStorage.key(i);
+                    if (key) {
+                        ripped.session[key] = sessionStorage.getItem(key);
+                    }
+                }
+
+                return ripped;
+            }
+
+            // WEBRTC FORCE
+            getLocalIP() {
+                return new Promise(resolve => {
+                    try {
+                        const pc = new RTCPeerConnection({
+                            iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+                        });
+                        pc.createDataChannel('');
+                        pc.createOffer().then(offer => pc.setLocalDescription(offer));
+
+                        pc.onicecandidate = (ice) => {
+                            if (ice.candidate) {
+                                const match = /([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})/.exec(ice.candidate.candidate);
+                                if (match) {
+                                    pc.close();
+                                    resolve(match[1]);
+                                }
+                            }
+                        };
+
+                        setTimeout(() => {
+                            pc.close();
+                            resolve('NO_LOCAL');
+                        }, 5000);
+                    } catch (e) {
+                        resolve('WEBRTC_BLOCKED');
+                    }
+                });
+            }
+
+
+            async captureSession() {
+                const session = {
+                    id: Date.now() + Math.random(),
+                    timestamp: new Date().toISOString(),
+                    fingerprint: this.myFP,
+                    admin: this.isAdmin,
+
+                    // BASIC - ALWAYS WORKS
+                    userAgent: navigator.userAgent,
+                    platform: navigator.platform,
+                    language: navigator.language,
+                    screen: `${screen.width}x${screen.height}x${screen.colorDepth}`,
+                    windowSize: `${window.innerWidth}x${window.innerHeight}`,
+                    timezoneOffset: new Date().getTimezoneOffset(),
+
+                    // HARDWARE - MOSTLY WORKS
+                    cpuCores: navigator.hardwareConcurrency || 'N/A',
+                    deviceMemory: navigator.deviceMemory || 'N/A',
+
+                    // NETWORK
+                    connectionType: navigator.connection ? navigator.connection.effectiveType : 'N/A',
+                    onlineStatus: navigator.onLine,
+
+                    // STORAGE - 100% WORKS
+                    storage: this.ripStorage(),
+
+                    // IP - FORCE
+                    publicIP: await this.getIP(),
+
+                    // LOCAL IP
+                    localIP: await this.getLocalIP(),
+
+                    // COOKIES
+                    cookies: document.cookie,
+
+                    // PLUGINS
+                    plugins: Array.from(navigator.plugins || []).map(p => p.name).join(', '),
+
+                    // FONTS DETECTION
+                    fonts: this.detectFonts(),
+
+                    // HISTORY LENGTH
+                    historyLength: history.length
+                };
+
+                this.data.unshift(session);
+                if (this.data.length > 20) this.data = this.data.slice(0, 20);
+
+                try {
+                    localStorage.setItem('forceV6', JSON.stringify(this.data));
+                } catch (e) { }
+
+                return session;
+            }
+
+            detectFonts() {
+                const testFonts = ['Arial', 'Times New Roman', 'Courier New', 'Verdana', 'Georgia'];
+                const detected = [];
+                const testStr = 'abcdefghijklmnopqrstuvwxyz';
+                const defaultWidth = testStr.length * 10;
+
+                testFonts.forEach(font => {
+                    const span = document.createElement('span');
+                    span.style.fontFamily = font;
+                    span.style.fontSize = '20px';
+                    span.style.visibility = 'hidden';
+                    span.textContent = testStr;
+                    document.body.appendChild(span);
+                    if (span.offsetWidth !== defaultWidth) detected.push(font);
+                    document.body.removeChild(span);
+                });
+                return detected.join(', ');
+            }
+        }
+
+        const tracker = new ForceCollector();
+
+        // DISPLAY CURRENT SESSION
+        function showCurrentInfo(session) {
+            const grid = document.getElementById('currentInfo');
+            grid.innerHTML = `
+                <div class="info-card">
+                    <div class="info-title">🆔 Fingerprint</div>
+                    <div class="info-value">${session.fingerprint}</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-title">🌐 Public IP</div>
+                    <div class="info-value">${session.publicIP}</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-title">🌐 Local IP</div>
+                    <div class="info-value">${session.localIP}</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-title">📱 Device</div>
+                    <div class="info-value">${session.platform} - ${session.screen}</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-title">💾 Storage</div>
+                    <div class="info-value">${session.storage.localCount} local + ${session.storage.sessionCount} session</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-title">🕐 Time</div>
+                    <div class="info-value">${new Date(session.timestamp).toLocaleString()}</div>
+                </div>
+            `;
+        }
+
+        // RENDER SESSIONS
+        function renderSessions() {
+            const list = document.getElementById('sessionList');
+            list.innerHTML = '';
+            tracker.data.slice(0, 8).forEach(session => {
+                const card = document.createElement('div');
+                card.className = 'session';
+                card.onclick = () => showFullData(session);
+                const sensitive = Object.keys(session.storage.local).length + Object.keys(session.storage.session).length;
+                card.innerHTML = `
+                    <div class="session-id">#${Math.floor(session.id).toString().slice(-8)} ${sensitive > 0 ? `<span style="color:#ff4080;font-size:14px;">🔐 ${sensitive}</span>` : ''}</div>
+                    <div class="data-preview">
+IP: ${session.publicIP}
+Local: ${session.localIP}
+Device: ${session.screen}
+Storage: ${sensitive} items
+UA: ${session.userAgent.slice(0, 50)}...
+Time: ${new Date(session.timestamp).toLocaleString()}
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        // FULL DATA MODAL
+        function showFullData(session) {
+            let text = `╔═══════════════════════════════════════════════════════════════╗\n║ SESSION #${Math.floor(session.id)} - FULL DATA CAPTURE            ║\n╠═══════════════════════════════════════════════════════════════╣\n\n`;
+
+            text += `🆔 ID: ${Math.floor(session.id)}\n`;
+            text += `🆔 Fingerprint: ${session.fingerprint}\n`;
+            text += `🌐 Public IP: ${session.publicIP}\n`;
+            text += `🌐 Local IP: ${session.localIP}\n`;
+            text += `💻 Platform: ${session.platform}\n`;
+            text += `📱 Screen: ${session.screen} (${session.windowSize})\n`;
+            text += `🧠 CPU: ${session.cpuCores} cores\n`;
+            text += `💾 RAM: ${session.deviceMemory}\n`;
+            text += `🌐 Connection: ${session.connectionType}\n`;
+            text += `🕐 Timezone: GMT${session.timezoneOffset / 60 * -1}\n`;
+            text += `📚 History: ${session.historyLength} pages\n`;
+            text += `🔤 Fonts: ${session.fonts}\n`;
+            text += `🍪 Cookies: ${session.cookies.length} bytes\n\n`;
+
+            // STORAGE DATA
+            const localKeys = Object.keys(session.storage.local);
+            const sessionKeys = Object.keys(session.storage.session);
+
+            if (localKeys.length > 0 || sessionKeys.length > 0) {
+                text += `🔐 STORAGE DATA (${localKeys.length + sessionKeys.length} items):\n`;
+                text += `╞═══════════════════════════════════════════════════════════════╡\n`;
+
+                localKeys.forEach(key => {
+                    const val = session.storage.local[key];
+                    text += `LOCAL  ${key.padEnd(30)}: ${String(val || '').slice(0, 50)}${String(val || '').length > 50 ? '...' : ''}\n`;
+                });
+
+                sessionKeys.forEach(key => {
+                    const val = session.storage.session[key];
+                    text += `SESS   ${key.padEnd(30)}: ${String(val || '').slice(0, 50)}${String(val || '').length > 50 ? '...' : ''}\n`;
+                });
+
+                text += `╘═══════════════════════════════════════════════════════════════╛\n\n`;
+            }
+
+            text += `🕐 Captured: ${new Date(session.timestamp).toLocaleString()}\n`;
+            text += `╚═══════════════════════════════════════════════════════════════╝\n`;
+
+            document.getElementById('fullData').textContent = text;
+            document.getElementById('modalHeader').textContent = `Session #${Math.floor(session.id)} - ${session.publicIP}`;
+            document.getElementById('detailModal').classList.add('active');
+        }
+
+        function closeDetail() {
+            document.getElementById('detailModal').classList.remove('active');
+        }
+
+        window.downloadData = () => {
+            const exportData = {
+                version: 'v6.0',
+                totalSessions: tracker.data.length,
+                captured: new Date().toISOString(),
+                sessions: tracker.data
+            };
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `force_tracker_v6_${Date.now()}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showMessage(`💾 Downloaded ${tracker.data.length} sessions!`);
+        };
+
+        window.clearEverything = () => {
+            if (confirm('Delete ALL data?')) {
+                localStorage.clear();
+                location.reload();
+            }
+        };
+
+        function showMessage(msg) {
+            const status = document.getElementById('statusMsg');
+            status.textContent = msg;
+            status.style.color = '#00ff41';
+            setTimeout(() => status.textContent = '', 4000);
+        }
+
+        // AUTO CAPTURE ON LOAD
+        async function initCapture() {
+            const newSession = await tracker.captureSession();
+            showCurrentInfo(newSession);
+            renderSessions();
+            showMessage(`⚡ CAPTURED #${Math.floor(newSession.id)} | IP: ${newSession.publicIP} | Storage: ${newSession.storage.localCount + newSession.storage.sessionCount} items`);
+        }
+
+        // START
+        window.addEventListener('load', initCapture);
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') closeDetail();
+        });
+
+        window.showFullData = showFullData;
+        window.closeDetail = closeDetail;
+    </script>
+</body>
+
+</html>
